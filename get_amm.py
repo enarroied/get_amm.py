@@ -129,38 +129,10 @@ def clean_df_amm(df_amm):
         df_bio_vigne_main["etat usage"].str.contains("Retrait", na=False)
     ]
 
+    df_bio_vigne_main_authorised = df_bio_vigne_main_authorised.reset_index()
+
     return df_bio_vigne_main_authorised
 
-
-# Create a new file with only products allowed for organic growing AND for vine growing
-# Also remove usages that are not required for the final file
-with open("usages_des_produits_autorises_v3_utf8.csv", "r+") as all_products, open(
-    "fichier_bio", "w+"
-) as bio:
-    for i in all_products:
-        if (
-            "Utilisable en agriculture biologique" in i
-            and "Vigne" in i
-            and ("Retrait" not in i)
-            and "Thrips" not in i
-            and "Black rot" not in i
-            and "Bactérioses" not in i
-            and "Excoriose" not in i
-            and "Erinose" not in i
-            and "Cochenilles" not in i
-            and "Aleurodes" not in i
-            and "Pourriture grise" not in i
-            and "Mouches" not in i
-            and "Stad. Hivern. Ravageurs" not in i
-            and "lack dead arm" not in i
-            and "Esca" not in i
-            and "Chenilles phytophages" not in i
-            and "Eutypiose" not in i
-            and "Acariens" not in i
-        ):
-            bio.write("{0}".format(i))
-bio.close()
-all_products.close()
 
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
