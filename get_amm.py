@@ -1,13 +1,19 @@
 import os
 import zipfile
+from io import BytesIO
 from pathlib import Path
+from zipfile import ZipFile
 
+import pandas as pd
 import requests
-import wget
 from bs4 import BeautifulSoup
 
 
 class URLNotFoundError(Exception):
+    pass
+
+
+class FileNameNotFoundError(Exception):
     pass
 
 
@@ -35,6 +41,35 @@ def get_url():
                 return href
 
     raise URLNotFoundError("URL ending with '-utf8.zip' not found on the page.")
+
+
+def download_and_extract_dataframe(
+    amm_url, file_name="usages_des_produits_autorises_utf8.csv"
+):
+    """
+    Downloads a zip file from the URL with AMM data and extracts its CSV contents into a Pandas DataFrame.
+
+    Args:
+        amm_url (str): The URL of the zip file to download and extract.
+        file_name (str): The name of the CSV file to extract from the zip archive.
+
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing the CSV content.
+    """
+    response = requests.get(amm_url)
+
+    with ZipFile(BytesIO(response.content), "r") as zip_file:
+        file_list = zip_file.namelist()
+
+        if file_name not in file_list:
+            raise FileNameNotFoundError(
+                f"File '{file_name}' not found in the zip archive."
+            )
+
+        with zip_file.open(file_name) as csv_file:
+            # FRENCH format --> separator is ";", set encoding too
+            df = pd.read_csv(csv_file, sep=";", encoding="utf-8")
+            return df
 
 
 # Get the files from the source
