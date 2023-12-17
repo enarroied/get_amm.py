@@ -71,6 +71,67 @@ def download_and_extract_dataframe(
             return df
 
 
+def clean_df_amm(df_amm):
+    """
+    Cleans the DataFrame of agricultural product usages (df_amm). It returns rows for
+        products allowed in Organic Farming ("Agriculture Biologique"), it excludes
+        marginal uses (Thrips, Esca...). Note that it excludes Black Rot as well, which could
+        be problematic (functionally). It return products that are still allowed.
+
+    Args:
+        df_amm (pd.DataFrame): The DataFrame containing agricultural product usage data.
+
+    Returns:
+        pd.DataFrame: A cleaned DataFrame containing rows that meet the specified criteria.
+
+    Technical riteria:
+    1. Select rows where the column "mentions autorisees" contains the term
+       "Utilisable en agriculture biologique" (case-insensitive).
+    2. Further filter the DataFrame to rows where the column "identifiant usage"
+       contains the term "vigne" (case-insensitive).
+    3. Exclude rows where the column "mentions autorisees" contains any of the terms
+       in the list of "exclude_usages" (case-insensitive).
+    4. Select rows where the column "etat usage" contains the term "Retrait" (case-insensitive).
+    """
+    df_bio = df_amm[
+        df_amm["mentions autorisees"].str.contains(
+            "Utilisable en agriculture biologique", case=False, na=False
+        )
+    ]
+    df_bio_vigne = df_bio[
+        df_bio["identifiant usage"].str.contains("vigne", case=False, na=False)
+    ]
+    exclude_usages = [
+        "Thrips",
+        "Black rot",
+        "Bactérioses",
+        "Excoriose",
+        "Erinose",
+        "Cochenilles",
+        "Aleurodes",
+        "Pourriture grise",
+        "Mouches",
+        "Stad. Hivern. Ravageurs",
+        "lack dead arm",
+        "Esca",
+        "Chenilles phytophages",
+        "Eutypiose",
+        "Acariens",
+    ]
+
+    df_bio_vigne_main = df_bio_vigne[
+        ~df_bio_vigne["mentions autorisees"].str.contains(
+            "|".join(exclude_usages), case=False, na=False
+        )
+    ]
+
+    df_bio_vigne_main_authorised = df_bio_vigne_main[
+        df_bio_vigne_main["etat usage"].str.contains("Retrait", na=False)
+    ]
+
+    return df_bio_vigne_main_authorised
+
+
 # Create a new file with only products allowed for organic growing AND for vine growing
 # Also remove usages that are not required for the final file
 with open("usages_des_produits_autorises_v3_utf8.csv", "r+") as all_products, open(
