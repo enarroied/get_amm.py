@@ -135,6 +135,44 @@ def clean_df_amm(df_amm):
     return df_bio_vigne_main_authorised
 
 
+def add_others(df_bio_vigne_main_authorised):
+    """
+    Adds a new column 'Autres' to the DataFrame based on conditions in 'condition emploi' and 'gamme usage'.
+
+    Args:
+        df_bio_vigne_main_authorised (pd.DataFrame): The DataFrame containing data.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the new 'Autres' column added.
+
+    Conditions:
+    - If 'badigeon' is present in 'condition emploi', 'Autres' will contain 'badigeon'.
+    - If 'jardin' is present in 'gamme usage', 'Autres' will contain 'Jardin autorisé'.
+    - If both conditions are met, 'Autres' will contain 'badigeon|Jardin autorisé', separated by a pipe (|) character.
+    """
+
+    # Function to merge two columns with a pipe separator
+    def merge_columns(row):
+        result = ""
+
+        # Check for 'badigeon' in 'condition emploi'
+        if pd.notna(row["condition emploi"]) and "badigeon" in row["condition emploi"]:
+            result += "badigeon"
+
+        # Check for 'jardin' in 'gamme usage'
+        if pd.notna(row["gamme usage"]) and "jardin" in row["gamme usage"]:
+            result += "|" if result else ""
+            result += "Jardin autorisé"
+
+        return result
+
+    df_bio_vigne_main_authorised["Autres"] = df_bio_vigne_main_authorised.apply(
+        merge_columns, axis=1
+    )
+
+    return df_bio_vigne_main_authorised
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
