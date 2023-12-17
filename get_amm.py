@@ -1,5 +1,4 @@
 import os
-import zipfile
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
@@ -71,17 +70,6 @@ def download_and_extract_dataframe(
             df = pd.read_csv(csv_file, sep=";", encoding="utf-8")
             return df
 
-
-# Get the files from the source
-file_name = "98f7cac6-6b29-4859-8739-51b825196959"
-url = "https://www.data.gouv.fr/fr/datasets/r/" + file_name
-wget.download(url)
-# Extract the file that we need from the zip file
-with zipfile.ZipFile("./" + file_name, "r") as zip_ref:
-    listOfFileNames = zip_ref.namelist()
-    for fileName in listOfFileNames:
-        if fileName == "usages_des_produits_autorises_v3_utf8.csv":
-            zip_ref.extract(fileName, "./")
 
 # Create a new file with only products allowed for organic growing AND for vine growing
 # Also remove usages that are not required for the final file
