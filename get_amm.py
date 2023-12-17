@@ -95,9 +95,10 @@ def clean_df_amm(df_amm):
     """
     df_bio = df_amm[
         df_amm["mentions autorisees"].str.contains(
-            "Utilisable en agriculture biologique", case=False, na=False
+            "agriculture biologique|production biologique", case=False, na=False
         )
     ]
+
     df_bio_vigne = df_bio[
         df_bio["identifiant usage"].str.contains("vigne", case=False, na=False)
     ]
