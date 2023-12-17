@@ -1,12 +1,41 @@
-#!/usr/bin/env python3
-# coding: utf-8
-
 import os
 import zipfile
 from pathlib import Path
 
 import requests
 import wget
+from bs4 import BeautifulSoup
+
+
+class URLNotFoundError(Exception):
+    pass
+
+
+def get_url():
+    """
+    Retrieves the URL used to download the file with the amm information. It' the one
+    ending with '-utf8.zip' from the specified root URL (government Open Data)
+
+    Returns:
+    str or int: If a matching URL is found, returns the URL as a string.
+               If no matching URL is found, raise URLNotFoundError.
+    """
+
+    root_url = "https://www.data.gouv.fr/fr/datasets/donnees-ouvertes-du-catalogue-e-phy-des-produits-phytopharmaceutiques-matieres-fertilisantes-et-supports-de-culture-adjuvants-produits-mixtes-et-melanges/"
+    root_html = requests.get(root_url)
+
+    soup_amm = BeautifulSoup(root_html.text)
+
+    anchor_tags = soup_amm.find_all("a")
+
+    for tag in anchor_tags:
+        href = tag.get("href")
+        if href:
+            if "-utf8.zip" in href:
+                return href
+
+    raise URLNotFoundError("URL ending with '-utf8.zip' not found on the page.")
+
 
 # Get the files from the source
 file_name = "98f7cac6-6b29-4859-8739-51b825196959"
