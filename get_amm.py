@@ -127,7 +127,7 @@ def clean_df_amm(df_amm):
     ]
 
     df_bio_vigne_main_authorised = df_bio_vigne_main[
-        df_bio_vigne_main["etat usage"].str.contains("Retrait", na=False)
+        df_bio_vigne_main["etat usage"].str.contains("Autorisé", na=False)
     ]
 
     df_bio_vigne_main_authorised = df_bio_vigne_main_authorised.reset_index()
@@ -171,6 +171,30 @@ def add_others(df_bio_vigne_main_authorised):
     )
 
     return df_bio_vigne_main_authorised
+
+
+def get_active_compound(df_bio_vigne_main_authorised_with_others):
+    """
+    Extracts the active compound from the 'Substances actives' column and creates a new column 'Active Compound'.
+    The active compound in in French ("matière active")
+
+    Args:
+        df_bio_vigne_main_authorised_with_others (pd.DataFrame): The DataFrame containing information about pesticides.
+
+    Returns:
+        pd.DataFrame: The DataFrame with the new 'Active Compound' column added.
+
+    Operation:
+      The function extracts the active compound from the 'Substances actives' column, which typically includes
+      information about the active compound and its concentration. It creates a new column 'Active Compound'
+      containing only the active compound name.
+    """
+    df_bio_vigne_main_authorised_with_others["Active Compound"] = (
+        df_bio_vigne_main_authorised_with_others["Substances actives"]
+        .str.split("(")
+        .str[0]
+    )
+    return df_bio_vigne_main_authorised_with_others
 
 
 # Create a new file with the final format and read fichier_bio
