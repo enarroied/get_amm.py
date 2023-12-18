@@ -363,6 +363,55 @@ def create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds):
 
     return df_soufre
 
+def create_df_insecticide(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+    Creates a DataFrame containing information about insecticide products.
+
+    Args:
+        df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
+
+    Returns:
+        pd.DataFrame: DataFrame containing insecticide product information.
+
+    The function filters the input DataFrame based on the 'fonctions' column, selecting rows where the term
+    'insecticide' is present. It then further filters based on specified active substances: 'Spinosad', 'Bacillus',
+    and 'pyréthrines'. The 'Concentration' column is derived from the 'Substances actives' column, and concentration
+    values are processed using the 'process_concentration' function. For products containing 'Bacillus', the concentration
+    is set to 0 by convention.
+
+    The 'Dose' column is calculated based on the concentration and 'dose retenue'. Additionally, a 'Biocontrôle (1/0)'
+    column is created, with 1 indicating the presence of 'biocontrôle' in the 'mentions autorisees', and 0 otherwise.
+
+    The resulting DataFrame includes columns: 'nom produit', 'Active Compound', 'Autres', 'dose retenue', 'Dose',
+    'Biocontrôle (1/0)', and 'nombre max d'application'.
+    """
+    df_insecticide = df_bio_vigne_main_authorised_with_others_compounds[
+                        df_bio_vigne_main_authorised_with_others_compounds[
+                            "fonctions"
+                        ].str.contains("insecticide", case=False, na=False)
+                    ].reset_index(drop=True)
+
+    substances_to_include = ["Spinosad", "Bacillus", "pyréthrines"]
+
+    df_insecticide = df_insecticide[
+        df_insecticide["Substances actives"]
+        .apply(lambda x: any(sub in x for sub in substances_to_include))
+    ].reset_index(drop=True)
+
+    df_insecticide["Concentration"] = df_insecticide["Substances actives"].str.split(")").str[1]
+    df_insecticide["Concentration"] = df_insecticide["Concentration"].apply(process_concentration)
+
+    # By convention, when the product is Bacillus the concentration is set to 0
+    df_insecticide.loc[df_insecticide["Substances actives"].str.contains("Bacillus", case=False, na=False), "Concentration"] = 0
+
+    df_insecticide["Dose"] = ((df_insecticide["Concentration"] / 100) * df_insecticide["dose retenue"]).astype(float).round(3)
+
+
+    df_insecticide["Biocontrôle (1/0)"] = df_insecticide["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
+
+    df_insecticide = df_insecticide[["nom produit", "Active Compound", "Autres", "dose retenue", "Dose", "Biocontrôle (1/0)", "nombre max d'application"]]
+
+    return df_insecticide
 
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
