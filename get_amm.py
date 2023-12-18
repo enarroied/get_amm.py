@@ -1,8 +1,10 @@
 import os
+import re
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
 
+import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -197,6 +199,48 @@ def get_active_compound(df_bio_vigne_main_authorised_with_others):
     return df_bio_vigne_main_authorised_with_others
 
 
+def process_concentration(value):
+    """
+    Extracts and processes the concentration value from the 'Substances actives' column.
+
+    Args:
+        value (str): The value from the 'Substances actives' column.
+
+    Returns:
+        float or np.nan: The processed concentration value as a float, rounded to two decimal places,
+            or np.nan if an error occurs during processing.
+
+    Operation:
+    * The function extracts numeric characters from the input value using a regular expression.
+    * It checks if the value contains a percent sign ("%") or " g/". Depending on the case,
+      it removes non-numeric characters, converts the value to a float, and rounds it accordingly.
+    * If any error occurs during processing, it returns np.nan.
+    """
+
+    def remove_non_numbers(input_string):
+        # Use a regular expression to match only digits and points
+        cleaned_string = re.sub(r"[^0-9.]", "", input_string)
+        return cleaned_string
+
+    try:
+        concentration_number = "".join([char for char in value if char.isdigit()])
+
+        if "%" in value:
+            clean_concentration_number = remove_non_numbers(concentration_number)
+            concentration = round(float(clean_concentration_number) / 10, 2)
+        elif " g/" in value:
+            clean_concentration_number = remove_non_numbers(concentration_number)
+            concentration = round(float(clean_concentration_number) / 100, 2)
+        else:
+            clean_concentration_number = remove_non_numbers(concentration_number)
+            concentration = round(float(clean_concentration_number) / 100, 2)
+
+        return concentration
+
+    except:
+        return np.nan
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
@@ -230,6 +274,7 @@ with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as in
                     Concentration = int(Concentration_nombre) / 100
             except:
                 Concentration = 0
+
             # Dose calculation
             Dose = (Concentration / 100) * float(liste_lecture[17])
             Dose = round(Dose, 1)
