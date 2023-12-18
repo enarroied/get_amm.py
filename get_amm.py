@@ -184,23 +184,6 @@ with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as in
         "Spécialité Commerciale;Matière Active (M.A.);Autre;Concentration en M.A. (%);Dose homologuée (Kg ou L / ha);Kg / ha de M.A.;Nombre de traitements max;;;Spécialité Commerciale;Matière Active (M.A.);Autre;Concentration en M.A. (%);Dose homologuée (Kg ou L / ha);Kg / ha de M.A.;Biocontrôle (1/0);Nombre de traitements max;;Spécialité Commerciale;Matière Active (M.A.);Autre;Concentration en M.A. (%);Dose homologuée (Kg ou L / ha);Kg / ha de M.A.;Biocontrôle (1/0);Nombre de traitements max;;Spécialité commerciale;Matière Active (M.A);Biocontrôle(1/0);;;Spécialité Commerciale;Matière Active (M.A.);Autre;Concentration en M.A. (%);Dose homologuée (Kg ou L / ha);Kg / ha de M.A.;Biocontrôle (1/0);Insecticide;Nombre de traitements max;\n"
     )
     for i in lecture:
-        Autres = ""
-        liste_lecture = i.split(";")
-        # Verify that the product is not doubled in the list
-        if liste_lecture[2] in already:
-            continue
-        else:
-            already.append(liste_lecture[2])
-        # Extract extra elements
-        if "badigeonnage" in i:
-            Autres = "badigeon"
-        else:
-            None
-        if "jardin" in i:
-            Autres = Autres + "Jardin autorisé"
-        else:
-            None
-
         # Extract 'MA' :
         MA = liste_lecture[8].split("(")
 
