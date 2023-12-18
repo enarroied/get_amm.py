@@ -318,6 +318,52 @@ def create_df_cuivre(df_bio_vigne_main_authorised_with_others_compounds):
     return df_cuivre
 
 
+def create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+    Create a DataFrame specific to sulphur products 'soufre' containing relevant information.
+    The format is the one for the final excel file
+
+    Args:
+        df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Original DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame filtered for 'soufre' with additional calculated columns.
+            Columns are; 'nom produit', 'Active Compound', 'Autres', 'dose retenue',  "Biocontrôle (1/0)", 'Dose',
+            and 'nombre max d'application'.
+    """
+    df_soufre = df_bio_vigne_main_authorised_with_others_compounds[
+        df_bio_vigne_main_authorised_with_others_compounds[
+            "Active Compound"
+        ].str.contains("cuivre", case=False, na=False)
+    ].reset_index(drop=True)
+
+    df_soufre["Concentration"] = df_soufre["Substances actives"].str.split(")").str[1]
+
+    df_soufre["Concentration"] = df_soufre["Concentration"].apply(process_concentration)
+    df_soufre["Dose"] = (
+        ((df_soufre["Concentration"] / 100) * df_cuivre["dose retenue"])
+        .astype(float)
+        .round(1)
+    )
+
+    df_soufre["Biocontrôle (1/0)"] = df_soufre["mentions autorisees"].apply(
+        lambda x: 1 if "biocontrôle" in x.lower() else 0
+    )
+    df_soufre = df_soufre[
+        [
+            "nom produit",
+            "Active Compound",
+            "Autres",
+            "dose retenue",
+            "Dose",
+            "Biocontrôle (1/0)",
+            "nombre max d'application",
+        ]
+    ]
+
+    return df_soufre
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
