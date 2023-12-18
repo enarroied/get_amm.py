@@ -277,6 +277,47 @@ def make_second_names_main(df_bio_vigne_main_authorised_with_others_compounds):
     return df_bio_vigne_main_authorised_with_others_compounds
 
 
+def create_df_cuivre(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+    Create a DataFrame specific to copper compounds 'cuivre' containing relevant information.
+    The format is the one for the final excel file
+
+    Args:
+        df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Original DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame filtered for 'cuivre' with additional calculated columns.
+            Columns are; 'nom produit', 'Active Compound', 'Autres', 'dose retenue', 'Dose',
+            and 'nombre max d'application'.
+    """
+    df_cuivre = df_bio_vigne_main_authorised_with_others_compounds[
+        df_bio_vigne_main_authorised_with_others_compounds[
+            "Active Compound"
+        ].str.contains("cuivre", case=False, na=False)
+    ].reset_index(drop=True)
+
+    df_cuivre["Concentration"] = df_cuivre["Substances actives"].str.split(")").str[1]
+
+    df_cuivre["Concentration"] = df_cuivre["Concentration"].apply(process_concentration)
+    df_cuivre["Dose"] = (
+        ((df_cuivre["Concentration"] / 100) * df_cuivre["dose retenue"])
+        .astype(float)
+        .round(1)
+    )
+    df_cuivre = df_cuivre[
+        [
+            "nom produit",
+            "Active Compound",
+            "Autres",
+            "dose retenue",
+            "Dose",
+            "nombre max d'application",
+        ]
+    ]
+
+    return df_cuivre
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
