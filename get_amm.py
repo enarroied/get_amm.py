@@ -334,7 +334,7 @@ def create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds):
     df_soufre = df_bio_vigne_main_authorised_with_others_compounds[
         df_bio_vigne_main_authorised_with_others_compounds[
             "Active Compound"
-        ].str.contains("cuivre", case=False, na=False)
+        ].str.contains("soufre", case=False, na=False)
     ].reset_index(drop=True)
 
     df_soufre["Concentration"] = df_soufre["Substances actives"].str.split(")").str[1]
