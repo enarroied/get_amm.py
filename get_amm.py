@@ -413,6 +413,37 @@ def create_df_insecticide(df_bio_vigne_main_authorised_with_others_compounds):
 
     return df_insecticide
 
+
+def create_df_pheromones(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+        Creates a DataFrame containing information about pheromone products.
+
+        Args:
+            df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
+
+        Returns:
+            pd.DataFrame: DataFrame containing pheromone product information.
+
+        * The function filters the input DataFrame based on the presence of 'pheromones' in the 'Substances actives' column.
+        * The 'Active Compound' column is derived from the 'Substances actives' column, with some specific replacements.
+        * The 'Biocontrôle (1/0)' column is created, with 1 indicating the presence of 'biocontrôle' in the 'mentions autorisees',
+            and 0 otherwise.
+
+        The resulting DataFrame includes columns: 'nom produit', 'Active Compound', and 'Biocontrôle (1/0)'.
+    """
+    df_pheromones = df_bio_vigne_main_authorised_with_others_compounds[
+                        df_bio_vigne_main_authorised_with_others_compounds["Substances actives"]
+                        .str.contains("pheromones", case=False, na=False)
+                    ].reset_index(drop=True)
+    
+    df_pheromones["Active Compound"] = df_pheromones["Substances actives"].str.replace("(Straight Chain Lepidopteran Pheromones)", "").replace("|", "+")
+    
+    df_pheromones["Biocontrôle (1/0)"] = df_pheromones["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
+
+    df_pheromones = df_pheromones[["nom produit", "Active Compound", "Biocontrôle (1/0)"]]
+    return df_pheromones
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
