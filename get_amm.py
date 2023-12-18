@@ -261,7 +261,6 @@ def make_second_names_main(df_bio_vigne_main_authorised_with_others_compounds):
             second_names_list = second_names_raw.split("|")
             for second_name in second_names_list:
                 second_name = second_name.strip()
-                print(second_name)
 
                 second_row = row.copy()
                 second_row["nom produit"] = second_name
@@ -269,7 +268,6 @@ def make_second_names_main(df_bio_vigne_main_authorised_with_others_compounds):
                 df_second_name = pd.concat(
                     [df_second_name, second_row.to_frame().T], ignore_index=True
                 )
-                print(second_row)
 
     df_bio_vigne_main_authorised_with_others_compounds = pd.concat(
         [df_bio_vigne_main_authorised_with_others_compounds, df_second_name],
