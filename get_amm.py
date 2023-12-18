@@ -459,35 +459,7 @@ with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as in
         MA = liste_lecture[8].split("(")
 
         
-        # Extract pheromones information
-        elif "Pheromones" in liste_lecture[8]:
-            MA = (
-                liste_lecture[8]
-                .replace("(Straight Chain Lepidopteran Pheromones)", "")
-                .replace("|", "+")
-            )
-            # Get if the product is classified as "biocontrole" (yes/no)
-            if "biocontrôle" in liste_lecture[7]:
-                biocontrole = 1
-            else:
-                biocontrole = 0
-
-            # Write into the file
-            intrants.write(
-                ";;;;;;;;;;;;;;;;;;;;;;;;;;;{0};{1};{2};;;;;;;;;;;\n".format(
-                    liste_lecture[2], MA, biocontrole
-                )
-            )
-            liste_autres = liste_lecture[3].split(" | ")
-            for i in liste_autres:
-                if i == "":
-                    continue
-                intrants.write(
-                    ";;;;;;;;;;;;;;;;;;;;;;;;;;;{0};{1};{2};;;;;;;;;;;\n".format(
-                        i, MA, biocontrole
-                    )
-                )
-
+        
         else:
             try:
                 Concentration_liste = MA[1].split(") ")
