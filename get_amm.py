@@ -241,6 +241,44 @@ def process_concentration(value):
         return np.nan
 
 
+def make_second_names_main(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+    Expand the DataFrame by creating new rows for each product name in the 'seconds noms commerciaux' column.
+    Each new line has the second name as the main name ("nom produit").
+    WARNING: this uses iterrows(). It should be fine since the volume of data is low.
+
+    Args:
+        df_bio_vigne_main_authorised_with_others_compounds (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: A new DataFrame with additional rows for each product name in the 'seconds noms commerciaux' column.
+    """
+    column_names = df_bio_vigne_main_authorised_with_others_compounds.columns.tolist()
+    df_second_name = pd.DataFrame(columns=column_names)
+    for _, row in df_bio_vigne_main_authorised_with_others_compounds.iterrows():
+        second_names_raw = row["seconds noms commerciaux"]
+        if pd.notna(second_names_raw):
+            second_names_list = second_names_raw.split("|")
+            for second_name in second_names_list:
+                second_name = second_name.strip()
+                print(second_name)
+
+                second_row = row.copy()
+                second_row["nom produit"] = second_name
+
+                df_second_name = pd.concat(
+                    [df_second_name, second_row.to_frame().T], ignore_index=True
+                )
+                print(second_row)
+
+    df_bio_vigne_main_authorised_with_others_compounds = pd.concat(
+        [df_bio_vigne_main_authorised_with_others_compounds, df_second_name],
+        ignore_index=True,
+    )
+
+    return df_bio_vigne_main_authorised_with_others_compounds
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
