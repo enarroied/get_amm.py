@@ -309,6 +309,7 @@ def create_df_cuivre(df_bio_vigne_main_authorised_with_others_compounds):
             "nom produit",
             "Active Compound",
             "Autres",
+            "Concentration",
             "dose retenue",
             "Dose",
             "nombre max d'application",
@@ -363,6 +364,7 @@ def create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds):
 
     return df_soufre
 
+
 def create_df_insecticide(df_bio_vigne_main_authorised_with_others_compounds):
     """
     Creates a DataFrame containing information about insecticide products.
@@ -386,98 +388,161 @@ def create_df_insecticide(df_bio_vigne_main_authorised_with_others_compounds):
     'Biocontrôle (1/0)', and 'nombre max d'application'.
     """
     df_insecticide = df_bio_vigne_main_authorised_with_others_compounds[
-                        df_bio_vigne_main_authorised_with_others_compounds[
-                            "fonctions"
-                        ].str.contains("insecticide", case=False, na=False)
-                    ].reset_index(drop=True)
+        df_bio_vigne_main_authorised_with_others_compounds["fonctions"].str.contains(
+            "insecticide", case=False, na=False
+        )
+    ].reset_index(drop=True)
 
     substances_to_include = ["Spinosad", "Bacillus", "pyréthrines"]
 
     df_insecticide = df_insecticide[
-        df_insecticide["Substances actives"]
-        .apply(lambda x: any(sub in x for sub in substances_to_include))
+        df_insecticide["Substances actives"].apply(
+            lambda x: any(sub in x for sub in substances_to_include)
+        )
     ].reset_index(drop=True)
 
-    df_insecticide["Concentration"] = df_insecticide["Substances actives"].str.split(")").str[1]
-    df_insecticide["Concentration"] = df_insecticide["Concentration"].apply(process_concentration)
+    df_insecticide["Concentration"] = (
+        df_insecticide["Substances actives"].str.split(")").str[1]
+    )
+    df_insecticide["Concentration"] = df_insecticide["Concentration"].apply(
+        process_concentration
+    )
 
     # By convention, when the product is Bacillus the concentration is set to 0
-    df_insecticide.loc[df_insecticide["Substances actives"].str.contains("Bacillus", case=False, na=False), "Concentration"] = 0
+    df_insecticide.loc[
+        df_insecticide["Substances actives"].str.contains(
+            "Bacillus", case=False, na=False
+        ),
+        "Concentration",
+    ] = 0
 
-    df_insecticide["Dose"] = ((df_insecticide["Concentration"] / 100) * df_insecticide["dose retenue"]).astype(float).round(3)
+    df_insecticide["Dose"] = (
+        ((df_insecticide["Concentration"] / 100) * df_insecticide["dose retenue"])
+        .astype(float)
+        .round(3)
+    )
 
+    df_insecticide["Biocontrôle (1/0)"] = df_insecticide["mentions autorisees"].apply(
+        lambda x: 1 if "biocontrôle" in x.lower() else 0
+    )
 
-    df_insecticide["Biocontrôle (1/0)"] = df_insecticide["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
-
-    df_insecticide = df_insecticide[["nom produit", "Active Compound", "Autres", "dose retenue", "Dose", "Biocontrôle (1/0)", "nombre max d'application"]]
+    df_insecticide = df_insecticide[
+        [
+            "nom produit",
+            "Active Compound",
+            "Autres",
+            "dose retenue",
+            "Dose",
+            "Biocontrôle (1/0)",
+            "nombre max d'application",
+        ]
+    ]
 
     return df_insecticide
 
 
 def create_df_pheromones(df_bio_vigne_main_authorised_with_others_compounds):
     """
-        Creates a DataFrame containing information about pheromone products.
+    Creates a DataFrame containing information about pheromone products.
 
-        Args:
-            df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
+    Args:
+        df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
 
-        Returns:
-            pd.DataFrame: DataFrame containing pheromone product information.
+    Returns:
+        pd.DataFrame: DataFrame containing pheromone product information.
 
-        * The function filters the input DataFrame based on the presence of 'pheromones' in the 'Substances actives' column.
-        * The 'Active Compound' column is derived from the 'Substances actives' column, with some specific replacements.
-        * The 'Biocontrôle (1/0)' column is created, with 1 indicating the presence of 'biocontrôle' in the 'mentions autorisees',
-            and 0 otherwise.
+    * The function filters the input DataFrame based on the presence of 'pheromones' in the 'Substances actives' column.
+    * The 'Active Compound' column is derived from the 'Substances actives' column, with some specific replacements.
+    * The 'Biocontrôle (1/0)' column is created, with 1 indicating the presence of 'biocontrôle' in the 'mentions autorisees',
+        and 0 otherwise.
 
-        The resulting DataFrame includes columns: 'nom produit', 'Active Compound', and 'Biocontrôle (1/0)'.
+    The resulting DataFrame includes columns: 'nom produit', 'Active Compound', and 'Biocontrôle (1/0)'.
     """
     df_pheromones = df_bio_vigne_main_authorised_with_others_compounds[
-                        df_bio_vigne_main_authorised_with_others_compounds["Substances actives"]
-                        .str.contains("pheromones", case=False, na=False)
-                    ].reset_index(drop=True)
-    
-    df_pheromones["Active Compound"] = df_pheromones["Substances actives"].str.replace("(Straight Chain Lepidopteran Pheromones)", "").replace("|", "+")
-    
-    df_pheromones["Biocontrôle (1/0)"] = df_pheromones["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
+        df_bio_vigne_main_authorised_with_others_compounds[
+            "Substances actives"
+        ].str.contains("pheromones", case=False, na=False)
+    ].reset_index(drop=True)
 
-    df_pheromones = df_pheromones[["nom produit", "Active Compound", "Biocontrôle (1/0)"]]
+    df_pheromones["Active Compound"] = (
+        df_pheromones["Substances actives"]
+        .str.replace("(Straight Chain Lepidopteran Pheromones)", "")
+        .replace("|", "+")
+    )
+
+    df_pheromones["Biocontrôle (1/0)"] = df_pheromones["mentions autorisees"].apply(
+        lambda x: 1 if "biocontrôle" in x.lower() else 0
+    )
+
+    df_pheromones = df_pheromones[
+        ["nom produit", "Active Compound", "Biocontrôle (1/0)"]
+    ]
     return df_pheromones
 
 
 def create_df_others(df_bio_vigne_main_authorised_with_others_compounds):
     """
-        Creates a DataFrame for substances excluding specified substances and computes additional columns.
+    Creates a DataFrame for substances excluding specified substances and computes additional columns.
 
-        Parameters:
-            df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
+    Parameters:
+        df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
 
-        Returns:
-            pd.DataFrame: DataFrame containing processed rows excluding specified substances.
+    Returns:
+        pd.DataFrame: DataFrame containing processed rows excluding specified substances.
 
-        The function filters the input DataFrame based on the absence of specified substances in a case-insensitive manner.
-        The resulting DataFrame includes all rows excluding the specified substances and computes additional columns:
-        * 'Concentration': Extracts concentration information from the 'Substances actives' column.
-        * 'Dose': Computes the dose based on concentration and 'dose retenue'.
-        * 'Insecticide': Flags rows where 'fonctions' column contains the term 'insecticide'.
-        * 'Biocontrôle (1/0)': Flags rows where 'mentions autorisees' column contains the term 'biocontrôle'.
+    The function filters the input DataFrame based on the absence of specified substances in a case-insensitive manner.
+    The resulting DataFrame includes all rows excluding the specified substances and computes additional columns:
+    * 'Concentration': Extracts concentration information from the 'Substances actives' column.
+    * 'Dose': Computes the dose based on concentration and 'dose retenue'.
+    * 'Insecticide': Flags rows where 'fonctions' column contains the term 'insecticide'.
+    * 'Biocontrôle (1/0)': Flags rows where 'mentions autorisees' column contains the term 'biocontrôle'.
     """
-    substances_to_exclude = ["Spinosad", "Bacillus", "pyréthrines", "soufre", "Sulphur", "cuivre", "pheromones"]
+    substances_to_exclude = [
+        "Spinosad",
+        "Bacillus",
+        "pyréthrines",
+        "soufre",
+        "Sulphur",
+        "cuivre",
+        "pheromones",
+    ]
     df_others = df_bio_vigne_main_authorised_with_others_compounds[
-        ~df_bio_vigne_main_authorised_with_others_compounds["Substances actives"]
-        .apply(lambda x: any(sub.lower() in x.lower() for sub in substances_to_exclude))
+        ~df_bio_vigne_main_authorised_with_others_compounds["Substances actives"].apply(
+            lambda x: any(sub.lower() in x.lower() for sub in substances_to_exclude)
+        )
     ].reset_index(drop=True)
-    
+
     df_others["Concentration"] = df_others["Substances actives"].str.split(")").str[1]
 
     df_others["Concentration"] = df_others["Concentration"].apply(process_concentration)
-    df_others["Dose"] = ((df_others["Concentration"] / 100) * df_others["dose retenue"]).astype(float).round(1)
+    df_others["Dose"] = (
+        ((df_others["Concentration"] / 100) * df_others["dose retenue"])
+        .astype(float)
+        .round(1)
+    )
 
-    df_others["Insecticide"] = df_others["fonctions"].apply(lambda x: 1 if "insecticide" in x.lower() else 0)
-    
-    df_others["Biocontrôle (1/0)"] = df_others["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
-    df_others = df_others[["nom produit", "Active Compound", "Autres", "dose retenue", "Dose", "Insecticide", "Biocontrôle (1/0)", "nombre max d'application"]]
-    
+    df_others["Insecticide"] = df_others["fonctions"].apply(
+        lambda x: 1 if "insecticide" in x.lower() else 0
+    )
+
+    df_others["Biocontrôle (1/0)"] = df_others["mentions autorisees"].apply(
+        lambda x: 1 if "biocontrôle" in x.lower() else 0
+    )
+    df_others = df_others[
+        [
+            "nom produit",
+            "Active Compound",
+            "Autres",
+            "dose retenue",
+            "Dose",
+            "Insecticide",
+            "Biocontrôle (1/0)",
+            "nombre max d'application",
+        ]
+    ]
+
     return df_others
+
 
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
@@ -493,73 +558,6 @@ with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as in
         # Extract 'MA' :
         MA = liste_lecture[8].split("(")
 
-        
-        
-        else:
-            try:
-                Concentration_liste = MA[1].split(") ")
-                Concentration_brute = Concentration_liste[1]
-                Concentration_nombre = ""
-                for i in Concentration_brute:
-                    if i.isdigit() == True:
-                        Concentration_nombre = Concentration_nombre + i
-                if "%" in Concentration_brute:
-                    Concentration = int(Concentration_nombre) / 10
-                # !!! EMPTY space before g --> not to get kg (kilos) per L
-                elif " g/" in Concentration_brute:
-                    Concentration = int(Concentration_nombre) / 100
-                else:
-                    Concentration = int(Concentration_nombre) / 100
-            except:
-                Concentration = 0
-            # Dose calcultation
-            try:
-                Dose = (Concentration / 100) * float(liste_lecture[17])
-                Dose = round(Dose, 1)
-            except:
-                Dose = 0
-            if "biocontrôle" in liste_lecture[7]:
-                biocontrole = 1
-            else:
-                biocontrole = 0
-            if "Insecticide" in liste_lecture[9]:
-                insecticide = 1
-            else:
-                insecticide = 0
-
-            # write into the file
-            intrants.write(
-                ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;{0};{1};{2};{3};{4};{5};{6};{7};{8}\n".format(
-                    liste_lecture[2],
-                    MA[0],
-                    Autres,
-                    Concentration,
-                    liste_lecture[17],
-                    Dose,
-                    biocontrole,
-                    insecticide,
-                    liste_lecture[21],
-                )
-            )
-            liste_autres = liste_lecture[3].split(" | ")
-            for i in liste_autres:
-                if i == "":
-                    continue
-                intrants.write(
-                    ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;{0};{1};{2};{3};{4};{5};{6};{7};{8}\n".format(
-                        i,
-                        MA[0],
-                        Autres,
-                        Concentration,
-                        liste_lecture[17],
-                        Dose,
-                        biocontrole,
-                        insecticide,
-                        liste_lecture[21],
-                    )
-                )
-    intrants.close()
-    lecture.close()
 
 # We create empty lists to generate the final file, with no gaps
 list_cuivre = []
