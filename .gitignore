@@ -1,0 +1,17 @@
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore Python virtual environment
+venv/
+
+# Ignore user-specific VS code settings
+.vscode/
+
+# Ignore settings.json
+settings.json
