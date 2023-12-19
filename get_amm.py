@@ -544,6 +544,61 @@ def create_df_others(df_bio_vigne_main_authorised_with_others_compounds):
     return df_others
 
 
+def combine_products(df_bio_vigne_main_authorised_with_others_compounds):
+    def rename_columns(df):
+        """
+        Combine different DataFrames for specific products into a single DataFrame.
+
+        Parameters:
+        - df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): The main DataFrame containing information about authorized products.
+
+        Returns:
+        - pd.DataFrame: The combined DataFrame with renamed columns.
+        """
+
+        column_mapping = {
+            "nom produit": "Spécialité commerciale",
+            "Active Compound": "Matière active (M.A.)",
+            "Autres": "Autre",
+            "Concentration": "Concentration en M.A. (% )",
+            "dose retenue": "Dose d'homologation (en kg ou L / ha)",
+            "Dose": "Dose d'homologation (en kg ou L / ha)",
+            "nombre max d'application": "Nombre de traitements autorisés",
+            "Biocontrôle (1/0)": "New Biocontrol Column",  # Example with a column not present in the DataFrame
+        }
+
+        existing_columns = set(df.columns)
+        mapping = {
+            old_name: new_name
+            for old_name, new_name in column_mapping.items()
+            if old_name in existing_columns
+        }
+
+        return df.rename(columns=mapping)
+
+    df_cuivre = rename_columns(
+        create_df_cuivre(df_bio_vigne_main_authorised_with_others_compounds)
+    )
+    df_soufre = rename_columns(
+        create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds)
+    )
+    df_insecticide = rename_columns(
+        create_df_insecticide(df_bio_vigne_main_authorised_with_others_compounds)
+    )
+    df_pheromones = rename_columns(
+        create_df_pheromones(df_bio_vigne_main_authorised_with_others_compounds)
+    )
+    df_others = df_others = rename_columns(
+        create_df_others(df_bio_vigne_main_authorised_with_others_compounds)
+    )
+
+    df_combined_products = pd.concat(
+        [df_cuivre, df_soufre, df_insecticide, df_pheromones, df_others], axis=1
+    )
+
+    return df_combined_products
+
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
