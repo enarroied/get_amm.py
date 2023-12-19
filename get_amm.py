@@ -444,6 +444,41 @@ def create_df_pheromones(df_bio_vigne_main_authorised_with_others_compounds):
     return df_pheromones
 
 
+def create_df_others(df_bio_vigne_main_authorised_with_others_compounds):
+    """
+        Creates a DataFrame for substances excluding specified substances and computes additional columns.
+
+        Parameters:
+            df_bio_vigne_main_authorised_with_others_compounds (pd.DataFrame): Input DataFrame containing product information.
+
+        Returns:
+            pd.DataFrame: DataFrame containing processed rows excluding specified substances.
+
+        The function filters the input DataFrame based on the absence of specified substances in a case-insensitive manner.
+        The resulting DataFrame includes all rows excluding the specified substances and computes additional columns:
+        * 'Concentration': Extracts concentration information from the 'Substances actives' column.
+        * 'Dose': Computes the dose based on concentration and 'dose retenue'.
+        * 'Insecticide': Flags rows where 'fonctions' column contains the term 'insecticide'.
+        * 'Biocontrôle (1/0)': Flags rows where 'mentions autorisees' column contains the term 'biocontrôle'.
+    """
+    substances_to_exclude = ["Spinosad", "Bacillus", "pyréthrines", "soufre", "Sulphur", "cuivre", "pheromones"]
+    df_others = df_bio_vigne_main_authorised_with_others_compounds[
+        ~df_bio_vigne_main_authorised_with_others_compounds["Substances actives"]
+        .apply(lambda x: any(sub.lower() in x.lower() for sub in substances_to_exclude))
+    ].reset_index(drop=True)
+    
+    df_others["Concentration"] = df_others["Substances actives"].str.split(")").str[1]
+
+    df_others["Concentration"] = df_others["Concentration"].apply(process_concentration)
+    df_others["Dose"] = ((df_others["Concentration"] / 100) * df_others["dose retenue"]).astype(float).round(1)
+
+    df_others["Insecticide"] = df_others["fonctions"].apply(lambda x: 1 if "insecticide" in x.lower() else 0)
+    
+    df_others["Biocontrôle (1/0)"] = df_others["mentions autorisees"].apply(lambda x: 1 if "biocontrôle" in x.lower() else 0)
+    df_others = df_others[["nom produit", "Active Compound", "Autres", "dose retenue", "Dose", "Insecticide", "Biocontrôle (1/0)", "nombre max d'application"]]
+    
+    return df_others
+
 # Create a new file with the final format and read fichier_bio
 # to extract and clean the data in it before writing in the new file
 with open("fichier_bio", "r+") as lecture, open("fichiers_intrants", "w+") as intrants:
