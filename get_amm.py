@@ -30,7 +30,7 @@ def get_url():
     root_url = "https://www.data.gouv.fr/fr/datasets/donnees-ouvertes-du-catalogue-e-phy-des-produits-phytopharmaceutiques-matieres-fertilisantes-et-supports-de-culture-adjuvants-produits-mixtes-et-melanges/"
     root_html = requests.get(root_url)
 
-    soup_amm = BeautifulSoup(root_html.text)
+    soup_amm = BeautifulSoup(root_html.text, features="lxml")
 
     anchor_tags = soup_amm.find_all("a")
 
