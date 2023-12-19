@@ -32,9 +32,12 @@ Separators in the CSV files are ";" semicolons since data is in French format wi
 
 The data comes from the [Open data from the E-Phy catalog of plant protection products, fertilizing materials, growing media, adjuvants, mixed products, and blends.](https://www.data.gouv.fr/fr/datasets/donnees-ouvertes-du-catalogue-e-phy-des-produits-phytopharmaceutiques-matieres-fertilisantes-et-supports-de-culture-adjuvants-produits-mixtes-et-melanges/)
 
+## Function documentation
+
+You can check the [API documentation](https://enarroied.github.io/get_amm.py/get_amm.html). it's generated automatically with [pdoc](https://pdoc.dev/docs/pdoc.html).
 
 ## I refactored the code
-I refactored this code at the end of 2023. The original code was very hard to read and maintain. This is one my first projects, I did not know pandas, so I read the files, line by line, and I created the new file iteratively. 
+I refactored this code at the end of 2023. The original code was hard to read and maintain. This is one my first projects, I did not know pandas, so I read the files, line by line, and I created the new file iteratively. 
 ## Installation
 1. Clone the repository to your local machine:
     ```bash
