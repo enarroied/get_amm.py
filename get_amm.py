@@ -341,7 +341,7 @@ def create_df_soufre(df_bio_vigne_main_authorised_with_others_compounds):
 
     df_soufre["Concentration"] = df_soufre["Concentration"].apply(process_concentration)
     df_soufre["Dose"] = (
-        ((df_soufre["Concentration"] / 100) * df_cuivre["dose retenue"])
+        ((df_soufre["Concentration"] / 100) * df_soufre["dose retenue"])
         .astype(float)
         .round(1)
     )
