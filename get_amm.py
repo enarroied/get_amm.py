@@ -597,3 +597,30 @@ def combine_products(df_bio_vigne_main_authorised_with_others_compounds):
     )
 
     return df_combined_products
+
+
+def get_amm(file_name="amm.csv"):
+    """
+    Download, clean, and process AMM (Autorisation de Mise sur le Marché) data related to vine products.
+
+    Args:
+        file_name (str, optional): The name of the CSV file to save the processed data. Default is "amm.csv".
+
+    Returns:
+        int: Return value 0 indicating successful execution.
+    """
+    amm_url = get_url()
+    df_amm = download_and_extract_dataframe(amm_url)
+
+    df_bio_vigne_main_authorised = clean_df_amm(df_amm)
+    df_bio_vigne_main_authorised_with_others = add_others(df_bio_vigne_main_authorised)
+    df_bio_vigne_main_authorised_with_others_compounds = get_active_compound(
+        df_bio_vigne_main_authorised_with_others
+    )
+
+    df_combined_products = combine_products(
+        df_bio_vigne_main_authorised_with_others_compounds
+    )
+    df_combined_products.to_csv(file_name, sep=";", index=False)
+
+    return 0
